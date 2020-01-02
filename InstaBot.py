@@ -49,14 +49,23 @@ class IgBot:
         self.driver.find_element_by_partial_link_text("followers").click()
         time.sleep(4)
         dialog = self.driver.find_element_by_xpath('/html/body/div[4]/div/div[2]')
-        for i in range(5):
-            self.driver.execute_script("arguments[0].scrollTop = (arguments[0].scrollHeight/5)", dialog)
+        # Required : A good logic to scroll down.
+        for k in range(10):
+            self.driver.execute_script("arguments[0].scrollTop = (arguments[0].scrollHeight/10)", dialog)
             time.sleep(1)
-
-        for i in range(1, 11):
-            xpath = '/html/body/div[4]/div/div[2]/ul/div/li[{}]/div/div[2]'.format(i)
-            self.driver.find_elements_by_xpath(xpath)[0].click()
-            time.sleep(2)
+        #
+        i = 0
+        j = 27
+        while i < 20:
+            xpath = '/html/body/div[4]/div/div[2]/ul/div/li[{}]/div/div[2]'.format(j)
+            str = self.driver.find_elements_by_xpath(xpath)[0]
+            print(str.text, j, i)
+            if str.text == 'Follow':
+                i += 1
+                str.click()
+                time.sleep(2)
+            time.sleep(1)
+            j += 1
 
     def unfollow_user(self, user):
         self.nav_user(user)
@@ -66,6 +75,7 @@ class IgBot:
 
 if __name__ == '__main__':
     ig_bot = IgBot('username', 'password')
-    ig_bot.unfollower('the.programeme')
-    ig_bot.follow_user('_codehub_')
+    # ig_bot.unfollower('the.programeme')
+    for i in range(3):
+        ig_bot.follow_user('meme_coding')
 
