@@ -4,6 +4,7 @@ from selenium import webdriver
 import os
 import time
 
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -26,46 +27,68 @@ class IgBot:
         time.sleep(4)
 
     def unfollower(self, account):
+        # account has the value of username.
         self.driver.get("https://www.instagram.com/{0}/".format(account))
+        # 2 second break for loading of homepage.
         time.sleep(2)
         self.driver.find_element_by_partial_link_text("following").click()
+        # 4 second break for loading of following panel.
         time.sleep(4)
+        # dialog is the xpath of the scrolling window of the following panel.
         dialog = self.driver.find_element_by_xpath('/html/body/div[4]/div/div[2]')
-        for i in range(5):
-            self.driver.execute_script("arguments[0].scrollTop = (arguments[0].scrollHeight/5)", dialog)
-            time.sleep(1)
-        path = "/html/body/div[5]/div/div/div[3]/button[1]"  # to click unfollow in pop-up window.
-        for i in range(1, 11):
-            xpath = "/html/body/div[4]/div/div[2]/ul/div/li[{}]/div/div[2]/button".format(i)
-            self.driver.find_elements_by_xpath(xpath)[0].click()
-            self.driver.find_elements_by_xpath(path)[0].click()
-            time.sleep(2)
+        # This path is for the pop-window open for confirmation for unfollow.
+        path = "/html/body/div[5]/div/div/div[3]/button[1]"
+        i = 1
+        while i < 25:
+            try:
+                # This xpath is for the button available to unfollow the user.
+                xpath = "/html/body/div[4]/div/div[2]/ul/div/li[{}]/div/div[2]/button".format(i)
+                self.driver.find_elements_by_xpath(xpath)[0].click()
+                time.sleep(1)
+                self.driver.find_elements_by_xpath(path)[0].click()
+                time.sleep(2)
+                i += 1
+            except IndexError:
+                print('ex')
+                time.sleep(1)
+                self.driver.execute_script(
+                    "arguments[0].scrollTop = arguments[0].scrollHeight", dialog
+                )
 
     def nav_user(self, user):
         self.driver.get('{}/{}'.format(self.base_url, user))
 
     def follow_user(self, user):
-        self.nav_user(user)
+        # user has username.
+        # This will redirect page towards the user profile (having lots of followers to follow!)
+        self.driver.get('{}/{}'.format(self.base_url, user))
+        # self.nav_user(user)
         self.driver.find_element_by_partial_link_text("followers").click()
         time.sleep(4)
         dialog = self.driver.find_element_by_xpath('/html/body/div[4]/div/div[2]')
-        # Required : A good logic to scroll down.
-        for k in range(10):
-            self.driver.execute_script("arguments[0].scrollTop = (arguments[0].scrollHeight/10)", dialog)
-            time.sleep(1)
-        #
-        i = 0
-        j = 27
-        while i < 20:
-            xpath = '/html/body/div[4]/div/div[2]/ul/div/li[{}]/div/div[2]'.format(j)
-            str = self.driver.find_elements_by_xpath(xpath)[0]
-            print(str.text, j, i)
-            if str.text == 'Follow':
-                i += 1
-                str.click()
-                time.sleep(2)
-            time.sleep(1)
-            j += 1
+        j = 1
+        i = 1
+        while i < 26:
+            # Try except is for if the xpath is not available exception will generate and at except part
+            # page will be scrolled down so that index can be generated.
+            try:
+                # This xpath is for the button available to follow the user.
+                xpath = "/html/body/div[4]/div/div[2]/ul/div/li[{}]/div/div[2]/button".format(j)
+                str = self.driver.find_elements_by_xpath(xpath)[0]
+                # print(str.text, j, i)
+                # If the button has follow text then follow otherwise ignored. (ec. Following, Requested)
+                if str.text == 'Follow':
+                    i += 1
+                    str.click()
+                    time.sleep(2)
+                time.sleep(1)
+                j += 1
+            except IndexError:
+                # print('ex')
+                time.sleep(1)
+                self.driver.execute_script(
+                    "arguments[0].scrollTop = arguments[0].scrollHeight", dialog
+                )
 
     def unfollow_user(self, user):
         self.nav_user(user)
@@ -76,6 +99,6 @@ class IgBot:
 if __name__ == '__main__':
     ig_bot = IgBot('username', 'password')
     # ig_bot.unfollower('the.programeme')
-    for i in range(3):
-        ig_bot.follow_user('meme_coding')
+    # for i in range(3):
+    ig_bot.follow_user('meme_coding')
 
