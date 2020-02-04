@@ -98,7 +98,7 @@ class IgBot:
 
 if __name__ == '__main__':
     ig_bot = IgBot('username', 'password')
-    # ig_bot.unfollower('the.programeme')
+    # ig_bot.unfollower('user_name')
     # for i in range(3):
-    ig_bot.follow_user('meme_coding')
+    ig_bot.follow_user('user_name')
 
